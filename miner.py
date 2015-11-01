@@ -10,6 +10,8 @@ from time import mktime
 import urllib
 import urllib2
 
+mined_posts_hashes = []
+
 def download_page(uri):
     try:
         html = urllib.urlopen(uri).read()
@@ -58,10 +60,15 @@ def run_miner(miner_name, uris, engine_uri):
     for uri in uris:
         try:
             visible_text = download_page(uri)
-            terms = extract_terms(visible_text)
-            mined_at = int(time.time()) # now
-            post = construct_post(terms, uri, mined_at, mined_at, miner_name)
-            sent_to_engine(post, engine_uri)
+            hash = base64.encodestring(visible_text)
+            if hash not in mined_posts_hashes:
+                terms = extract_terms(visible_text)
+                mined_at = int(time.time()) # now
+                post = construct_post(terms, uri, mined_at, mined_at, miner_name)
+                sent_to_engine(post, engine_uri)
+                mined_posts_hashes.append(hash)
+            else:
+                print("Post already mined.")
 
         except Exception as e:
             print e.message, e.args
