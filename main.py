@@ -88,12 +88,11 @@ def settings():
         return render_template('settings.html', settings=settings, errors={})
     elif request.method == "POST":
         has_errors, errors = validate_settings(request.form)
+        settings = { k: str(request.form[k]) for k in ['uris', 'miner_name', 'engine_uri', 'interval'] }
+        settings['uris'] = [ s.strip() for s in settings['uris'].split(',')]
         if has_errors:
-            return render_template('settings.html', settings=request.form, errors=errors)
+            return render_template('settings.html', settings=settings, errors=errors)
         else:
-            # save the settings while filtering out unknown keys
-            settings = { k: str(request.form[k]) for k in ['uris', 'miner_name', 'engine_uri', 'interval'] }
-            settings['uris'] = [ s.strip() for s in settings['uris'].split(',')]
             save_settings(settings)
             miner_thread.reset(settings)
             if not miner_thread.is_alive():
