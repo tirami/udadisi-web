@@ -24,7 +24,7 @@ def remove_urls(text):
 
 def remove_non_whitelisted_characters(text):
     regex = re.compile('[^@a-zA-Z\s]')
-    return regex.sub('', text)
+    return regex.sub(' ', text)
 
 
 def remove_twitter_usernames(text):

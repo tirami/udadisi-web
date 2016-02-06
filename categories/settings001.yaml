@@ -1,4 +1,4 @@
 interval: '10'
 name: BBC and Hacker News
 parent_id: http://localhost:4000
-urls: https://news.ycombinator.com/, http://www.bbc.co.uk/news/technology
+urls: http://www.bbc.co.uk/news/technology

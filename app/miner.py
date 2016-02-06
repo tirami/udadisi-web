@@ -10,6 +10,7 @@ import urllib
 import urllib2
 from threading import Thread
 import extract
+import operator
 
 from BeautifulSoup import BeautifulSoup
 
@@ -25,10 +26,10 @@ class WebsiteMiner(Thread):
         urls = self.category.urls.split(',')
         for url in urls:
             try:
-                visible_texts = self.download_page(url)
-                text_hash = hashlib.sha1(' '.join(visible_texts).encode('utf-8'))
+                visible_text = self.download_page(url)
+                text_hash = hashlib.sha1(visible_text.encode('utf-8'))
                 if text_hash not in self.mined_posts_hashes:
-                    terms_dict = extract.extract_terms(visible_texts)
+                    terms_dict = extract.extract_terms(visible_text)
                     now = datetime.now().strftime('%Y%m%d%H%M')
                     post = WebsiteMiner.dict_of_post(url, terms_dict, now, now)
                     batch = WebsiteMiner.package_batch_to_json(self.category.id, [post])
@@ -51,14 +52,20 @@ class WebsiteMiner(Thread):
         try:
             html = urllib.urlopen(uri).read()
             soup = BeautifulSoup(html)
-            # remove all script and style elements
-            for script in soup(["script", "style"]):
-                script.extract()
-            text = soup.text
+            text = self.find(soup, 'p') \
+                    + self.find(soup, 'h1') \
+                    + self.find(soup, 'h2') \
+                    + self.find(soup, 'h3')
+
             return text
         except:
             print "Error loading " + uri, sys.exc_info()
             return ""
+
+    def find(self, soup, tag):
+        elements = soup.findAll(tag)
+        lines = [e.text for e in elements if len(e.text) > 0]
+        return ' '.join(lines)
 
     # standard engine communication static methods
     @staticmethod
