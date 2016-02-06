@@ -14,7 +14,8 @@ def run():
     # configure the service
     views.miner_cls = WebsiteMiner
     views.form_fields = form_fields
-    views.app.run(host='0.0.0.0')
+    # views.app.run(host='0.0.0.0')
+    views.app.run()
 
 
 if __name__ == "__main__":
