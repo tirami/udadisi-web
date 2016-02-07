@@ -26,12 +26,13 @@ class WebsiteMiner(Thread):
         urls = self.category.urls.split(',')
         for url in urls:
             try:
-                visible_text = self.download_page(url)
+                visible_text, last_modified = self.download_page(url)
                 text_hash = hashlib.sha1(visible_text.encode('utf-8'))
                 if text_hash not in self.mined_posts_hashes:
                     terms_dict = extract.extract_terms(visible_text)
                     now = datetime.now().strftime('%Y%m%d%H%M')
-                    post = WebsiteMiner.dict_of_post(url, terms_dict, now, now)
+                    time = last_modified.strftime('%Y%m%d%H%M')
+                    post = WebsiteMiner.dict_of_post(url, terms_dict, time, now)
                     batch = WebsiteMiner.package_batch_to_json(self.category.id, [post])
                     self.send_to_parent(self.category.parent_id, batch)
                     self.mined_posts_hashes.append(hash)
@@ -50,14 +51,21 @@ class WebsiteMiner(Thread):
     # website specific static methods
     def download_page(self, uri):
         try:
-            html = urllib.urlopen(uri).read()
+            res = urllib.urlopen(uri)
+            info = dict(res.info())
+            time = datetime.now()
+            if 'last-modified' in info:
+                time_str = info['last-modified']
+                time = datetime.strptime(time_str, '%a, %d %b %Y %H:%M:%S %Z')
+
+            html = res.read()
             soup = BeautifulSoup(html)
             text = self.find(soup, 'p') \
                     + self.find(soup, 'h1') \
                     + self.find(soup, 'h2') \
                     + self.find(soup, 'h3')
 
-            return text
+            return text, time
         except:
             print "Error loading " + uri, sys.exc_info()
             return ""
@@ -79,11 +87,11 @@ class WebsiteMiner(Thread):
             print e
 
     @staticmethod
-    def dict_of_post(post_url, terms_dict, now, mined_at):
+    def dict_of_post(post_url, terms_dict, last_modified, mined_at):
         post = {
            "terms": terms_dict,
            "url": post_url,
-           "datetime": now,
+           "datetime": last_modified,
            "mined_at": mined_at
         }
         return post
