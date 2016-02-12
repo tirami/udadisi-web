@@ -33,7 +33,7 @@ def remove_twitter_usernames(text):
 
 
 def remove_stopwords(tagged):
-    terms = [word for word in tagged if word.lower() not in stop and len(word) > 0]
+    terms = [word for word in tagged if word.lower() not in stop and len(word) > 1]
     return terms
 
 
