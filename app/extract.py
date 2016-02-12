@@ -4,7 +4,7 @@ from nltk.corpus import stopwords
 import HTMLParser
 import re
 
-stop = stopwords.words('english')
+stop = stopwords.words('english') + stopwords.words('spanish')
 tags_to_remove = ['PRP', 'PRP$', 'RP', 'TO', 'IN']
 
 
@@ -23,7 +23,7 @@ def remove_urls(text):
 
 
 def remove_non_whitelisted_characters(text):
-    regex = re.compile('[^@a-zA-Z\s]')
+    regex = re.compile('[^@a-zA-Z ]')
     return regex.sub(' ', text)
 
 
